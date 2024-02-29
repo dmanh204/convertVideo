@@ -9,6 +9,10 @@ sys.path.insert(0, 'F:/TaiLieuHocTap/sip/StreamCipher/Salsa20')
 import salsa20 as s20
 sys.path.insert(0, 'F:/TaiLieuHocTap/sip/StreamCipher/Sosemanuk')
 import SOSEMANUK as ssmn
+sys.path.insert(0, 'F:/TaiLieuHocTap/sip/StreamCipher/Taha2017')
+import Taha as th
+sys.path.insert(0, 'F:/TaiLieuHocTap/sip/StreamCipher/Hybrid_stream')
+import hybrid as hb
 def xor_encrypt_decrypt(bin_np, key):
     key_np = np.array(key, dtype=np.uint8)
     key_np = np.resize(key_np, bin_np.shape) # Resize key stream  equal to binary stream.
@@ -22,7 +26,7 @@ data = np.fromfile(mp4, dtype=np.dtype('B'))# Doc tu file binary .mp4 ra numpy a
 
 # Khoi tao ma dong
 sKey = []
-print("1. RC4 \n2. Salsa20 \n3. Sosemanuk \n4. Taha \n5. China \n6. Proposed")
+print("1. RC4 \n2. Salsa20 \n3. Sosemanuk \n4. Taha \n5. Hybrid \n6. Proposed")
 choice = int(input())
 if choice == 1:
     key = [100, 90, 176, 211, 45, 73, 192, 153, 235, 111, 74, 32]
@@ -41,6 +45,16 @@ if choice == 3:
     ma = ssmn.SOSEMANUK(key, initialVector)
     for _ in range(math.ceil(data.size / 16)): # Vi mot lan chay SOSEMANUK sinh ra 4 gia tri 4-byte
         sKey.extend(ma.run())
+if choice == 4:
+    iv = 0x3281395ebba3e74b
+    key = 0x2641b709406e48c9
+    ma = th.Taha(key, iv)
+    lanchay = math.ceil(data.size / 4) # Vi mot lan chay sinh ra 32 bit = 4 byte
+    sKey = ma.run(lanchay)
+if choice == 5:
+    ma = hb.hybrid()
+    lanchay = math.ceil(data.size / 2)  # Vi mot lan chay sinh ra 16 bit = 2 byte
+    sKey = ma.run(lanchay)
 if choice == 6:
     key = 0x1234567890abcdef
     ma = lw.light(key)
@@ -51,5 +65,5 @@ if choice == 6:
 ketqua = xor_encrypt_decrypt(data, sKey)
 output = ''.join(format(byte, '08b') for byte in ketqua)# chuyen cac phan tu trong numpy array tu dang binary
 # sang dang string roi ghep vao output.
-with open('TestSosemanuk.txt', 'w') as file: # Viet ket qua vao file .txt
+with open('TestHybrid.txt', 'w') as file: # Viet ket qua vao file .txt
     file.write(output)
